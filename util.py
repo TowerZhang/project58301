@@ -73,36 +73,58 @@ def open_files(input_data, para_data):
     return trans, translen, MIS, SDC
 
 
+def getL(trans, sorted_MIS):
+
+
+    list1 = [x[1] for x in sorted_MIS]
+    temp_list = []
+    for seq in range(len(trans)):
+        element_set = get_sequence_distinct(trans[seq])
+        for item in element_set:
+            temp_list.append(item)
+    counter = Counter(temp_list)
+    # print(counter)
+
+    temp_list2 = []
+    for each in counter:
+        value = counter.get(each)
+        sup_count = value/translen
+        temp_list2.append(sup_count)
+        temp_list3 = list(counter.keys())
+    sup_dict = dict(zip(temp_list3, temp_list2))
+    # print(sup_dict)
+
+    temp_list4 = []
+    temp_list5 = []
+    for each in sorted_MIS:
+        if sorted_MIS.get(each) <= sup_dict.get(each):
+            first = sorted_MIS.get(each)
+            break
+    # print(first)
+
+    for each in sup_dict:
+        if first < sup_dict[each]:
+            temp_list4.append(each)
+            temp_list5.append(sup_dict[each])
+    L = dict(zip(temp_list4, temp_list5))
+    # print(L)
+    return L
+
+
+def getF1(L, MIS):
+    temp_list6 = []
+    temp_list7 = []
+    for each in L:
+        if MIS.get(each) <= L[each]:
+            temp_list6.append(each)
+            temp_list7.append(L[each])
+    F1 = dict(zip(temp_list6, temp_list7))
+    print(F1)
+    return F1
+
+
 trans, translen, MIS, SDC = open_files(input_data, para_data)
-sorted_MIS = sorted(MIS.items(), key=lambda t: t[1])
-print(sorted_MIS)
-
-list1 = [x[1] for x in sorted_MIS]
-# print(hex(id(list1)))
-# print(hex(id(sorted_MIS)))
-temp_list = []
-for seq in range(len(trans)):
-    element_set = get_sequence_distinct(trans[seq])
-    for item in element_set:
-        temp_list.append(item)
-counter = Counter(temp_list)
-# print(counter)
-
-temp_list2 = []
-for each in counter:
-    value = counter.get(each)
-    sup_count = value/translen
-    temp_list2.append(sup_count)
-    temp_list3 = list(counter.keys())
-new_dict = dict(zip(temp_list3, temp_list2))
-# print(new_dict)
-
-temp_list4 = []
-temp_list5 = []
-first = sorted_MIS[0][1]
-for each in new_dict:
-    if(first < new_dict[each]):
-        temp_list4.append(each)
-        temp_list5.append(new_dict[each])
-L1 = dict(zip(temp_list4, temp_list5))
-print(L1)
+sorted_MIS = dict(sorted(MIS.items(), key=lambda t: t[1]))
+# print(sorted_MIS)
+L = getL(trans, sorted_MIS)
+F1 = getF1(L, MIS)
