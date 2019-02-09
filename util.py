@@ -75,8 +75,6 @@ def open_files(input_data, para_data):
 
 def getL(trans, sorted_MIS):
 
-
-    list1 = [x[1] for x in sorted_MIS]
     temp_list = []
     for seq in range(len(trans)):
         element_set = get_sequence_distinct(trans[seq])
@@ -103,7 +101,7 @@ def getL(trans, sorted_MIS):
     # print(first)
 
     for each in sup_dict:
-        if first < sup_dict[each]:
+        if first <= sup_dict[each]:
             temp_list4.append(each)
             temp_list5.append(sup_dict[each])
     L = dict(zip(temp_list4, temp_list5))
@@ -119,12 +117,39 @@ def getF1(L, MIS):
             temp_list6.append(each)
             temp_list7.append(L[each])
     F1 = dict(zip(temp_list6, temp_list7))
-    print(F1)
+    # print(F1)
     return F1
 
 
 trans, translen, MIS, SDC = open_files(input_data, para_data)
-sorted_MIS = dict(sorted(MIS.items(), key=lambda t: t[1]))
-# print(sorted_MIS)
-L = getL(trans, sorted_MIS)
+sorted_MIS_list = sorted(MIS.items(), key=lambda t: t[1])
+sorted_MIS_dict = dict(sorted_MIS_list)
+print(sorted_MIS_list)
+print(sorted_MIS_dict)
+L = getL(trans, sorted_MIS_dict)
 F1 = getF1(L, MIS)
+
+C2 = {}
+for i in range(0, len(MIS)-1):
+    if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
+        for j in range(i+1, len(sorted_MIS_list)):
+            if sorted_MIS_list[j][0] in L.keys() and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[j][0]] and abs(L[sorted_MIS_list[j][0]] - L[sorted_MIS_list[i][0]])  <= SDC:
+                temp_list = []
+                temp_list.append(sorted_MIS_list[i][0])
+                temp_list.append(sorted_MIS_list[j][0])
+                C2.update({tuple(temp_list): 0})
+
+for i in range(0, len(MIS)):
+    if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
+        for j in range(0, len(MIS)):
+            if sorted_MIS_list[j][0] in L.keys() and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[j][0]]:
+                temp_list = []
+                temp_list.append(tuple([sorted_MIS_list[i][0]]))
+                temp_list.append(tuple([sorted_MIS_list[j][0]]))
+                C2.update({tuple(temp_list): 0})
+# print(len(C2))
+# print(C2)
+
+
+
+
