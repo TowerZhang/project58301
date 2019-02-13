@@ -81,20 +81,18 @@ def open_files(input_data, para_data):
         i = 0
         minSupDict = {}
         MIS = {}
-        for i in range(len(data)):
-            items = list(map(lambda x: x.strip(), data[i].split("=")))
-            reSearch = re.search(r'MIS\(?(\w+)\)?', items[0])
-            key = reSearch.group(1)
-            minSupDict[tuple([key])] = float(items[1])
-            value = minSupDict[tuple([key])]
-            new = {key: value}
-            MIS.update(new)
+        SDC = 0
+        for line in parameters:
+            if "SDC" in line:
+                SDC = float((line.split("=")[1]).strip())
+            elif "MIS" in line:
+                temp_var = line.split("=")
+                # extract item from 1st token
+                key = (temp_var[0][temp_var[0].index('(') + 1:temp_var[0].index(')')]).strip()
+                minSupDict[tuple([key])] = float(temp_var[1].strip())
+                value = minSupDict[tuple([key])]
+                MIS.update({key: value})
         # print(MIS)
-
-        SDC = parameters[-1]
-        items1 = SDC.strip()
-        items1 = items1.split("=")
-        SDC = float(items1[1])
         # print(SDC)
     return trans_list, translen, MIS, SDC
 
@@ -143,7 +141,7 @@ def getF1(L, MIS):
             temp_list6.append(each)
             temp_list7.append(L[each])
     F1 = dict(zip(temp_list6, temp_list7))
-    print(F1)
+#     print(F1)
     return F1
 
 
@@ -397,7 +395,7 @@ def ms_candidate_gen(Fk, MIS):
                             print(temp_set2)
 
                     else:
-                        if ss2_len > 2 or (ss2_len ==2 and len(ss2) == 1 and ele1_str < ss2[0][0]):
+                        if ss2_len > 2 or (ss2_len == 2 and len(ss2) == 1 and ele1_str < ss2[0][0]):
                             temp_set2 = deep_tuple2list(ss2)
                             temp_set2[len(temp_set2) - 1].append(ele1_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
@@ -489,9 +487,6 @@ def tuple2str_output(Fk):
         seq_str = seq_str + ">"
         output.append(seq_str)
     return output
-
-
-
 
 
 
