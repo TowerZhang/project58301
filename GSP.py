@@ -1,8 +1,34 @@
 import util as util
 
-input_data = 'data/data-1.txt'
-para_data = 'data/para1-1.txt'
-output_data = 'data/output.txt'
+# -----------------------------------------------
+# input_data = '03_large_dataset/data-2.txt'
+# para_data = '03_large_dataset/para2-2.txt'
+# output_data = '03_large_dataset/output2.txt'
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# input_data = '03_large_dataset/data-2.txt'
+# para_data = '03_large_dataset/para2-1.txt'
+# output_data = '03_large_dataset/output1.txt'
+
+# -----------------------------------------------
+# input_data = '02_small_dataset2/data-1.txt'
+# para_data = '02_small_dataset2/para1-2.txt'
+# output_data = '02_small_dataset2/output2.txt'
+
+# -----------------------------------------------
+# input_data = '02_small_dataset2/data-1.txt'
+# para_data = '02_small_dataset2/para1-1.txt'
+# output_data = '02_small_dataset2/output1.txt'
+
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# input_data = '01_small_dataset1/inputdata.txt'
+# para_data = '01_small_dataset1/params.txt'
+# output_data = '01_small_dataset1/output.txt'
+
+# -----------------------------------------------
+# input_data = 'data/data-1.txt'
+# para_data = 'data/para1-1.txt'
+# output_data = 'data/output.txt'
 
 trans_list, translen, MIS, SDC = util.open_files(input_data, para_data)
 sorted_MIS_list = sorted(MIS.items(), key=lambda t: t[1])
@@ -38,7 +64,6 @@ with open(output_data, "w") as f:
         k += 1
         F_next = Fk
     f.write(write)
-    print(f.name)
     f.close()
 
 

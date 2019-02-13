@@ -1,0 +1,6 @@
+Number of Length 1 Frequency Sequences:5
+	<{47}>
+	<{46}>
+	<{48}>
+	<{49}>
+	<{45}>

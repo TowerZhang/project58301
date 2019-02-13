@@ -1,11 +1,11 @@
 Number of Length 1 Frequency Sequences:8
-	<{90}>
 	<{10}>
 	<{50}>
+	<{90}>
 	<{40}>
+	<{70}>
 	<{30}>
 	<{80}>
-	<{70}>
 	<{20}>
 
 Number of Length 2 Frequency Sequences:16
