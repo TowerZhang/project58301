@@ -129,7 +129,7 @@ def getL(trans, sorted_MIS, translen):
             temp_list4.append(each)
             temp_list5.append(sup_dict[each])
     L = dict(zip(temp_list4, temp_list5))
-    # print(L)
+    print(L)
     return L
 
 
@@ -149,8 +149,9 @@ def level2_candidate_gen(L, SDC, sorted_MIS_list, MIS):
     C2 = {}
     for i in range(0, len(MIS) - 1):
         if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
-            for j in range(i + 1, len(sorted_MIS_list)):
-                if sorted_MIS_list[j][0] in L.keys() and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[j][0]] and abs(
+            for j in range(i + 1, len(MIS)):
+                # and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[i][0]]
+                if sorted_MIS_list[j][0] in L.keys() and abs(
                         L[sorted_MIS_list[j][0]] - L[sorted_MIS_list[i][0]]) <= SDC:
                     temp_list = []
                     temp_list.append(sorted_MIS_list[i][0])
@@ -161,7 +162,8 @@ def level2_candidate_gen(L, SDC, sorted_MIS_list, MIS):
     for i in range(0, len(MIS)):
         if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
             for j in range(0, len(MIS)):
-                if sorted_MIS_list[j][0] in L.keys() and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[j][0]] and abs(
+                # and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[i][0]]
+                if sorted_MIS_list[j][0] in L.keys() and abs(
                         L[sorted_MIS_list[j][0]] - L[sorted_MIS_list[i][0]]) <= SDC:
                     temp_list = []
                     temp_list.append(tuple([sorted_MIS_list[i][0]]))
@@ -309,7 +311,8 @@ def ms_candidate_gen(Fk, MIS):
     # Join Step
     for s1 in Fk:
         Ck = {}
-        s1_len = len(get_sequence_distinct(s1))
+        s1_distinct = get_sequence_distinct(s1)
+        s1_len = len(s1_distinct)
         if len(s1[len(s1) - 1]) == 1:           # find the last item in s1
             s1_last_ele = s1[len(s1) - 1][0]
         else:
@@ -318,23 +321,29 @@ def ms_candidate_gen(Fk, MIS):
 
         flag1 = True                            # flag in case 1
         minMIS = MIS[s1[0][0]]
-        for i in s1:                            # fist item has the lowest MIS
-            for j in i:
-                if minMIS >= MIS[j]:
-                    flag1 = False
-
+        for each in range(len(s1)):                            # fist item has the lowest MIS
+            for item in range(len(s1[each])):
+                if each == 0 and item == 0:
+                    pass
+                else:
+                    if minMIS >= MIS[s1[each][item]]:
+                        flag1 = False
         ss2 = s1                                # flag in case 2
         ss2_last_ele = s1_last_ele
         ss2_len = s1_len
+        ss2_distinct = s1_distinct
         flag2 = True
         minMIS_last = MIS[ss2_last_ele]
-        for i in ss2:  # last item has the lowest MIS
-            for j in i:
-                if minMIS >= MIS[j]:
-                    flag2 = False
+        for each in range(len(ss2)):                           # last item has the lowest MIS
+            for item in range(len(ss2[each])):
+                if each == len(ss2)-1 and item == len(ss2[each])-1:
+                    pass
+                else:
+                    if minMIS_last >= MIS[ss2[each][item]]:
+                        flag2 = False
 
         if flag1:
-            print("flag1")
+            # print("flag1")
             temp_set1, ele1 = remove_second(s1)
             # print(s1)
             # print(temp_set1)
@@ -353,11 +362,13 @@ def ms_candidate_gen(Fk, MIS):
                         temp_set = deep_tuple2list(s1)
                         temp_set.append(ele2)
                         Ck.update({deep_list2tutple(temp_set): 0})  # c1 generated
+                        # print("case1-1 : " + str(temp_set))
 
                         if s1_len == 2 and ele2_str > s1_last_ele:  # special case for c2
                             temp_set2 = deep_tuple2list(s1)
                             temp_set2[len(temp_set2) - 1].append(ele2_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
+                            # print("case1-2 : "+ str(temp_set2))
 
                     else:                                           # not separate element
                         # print(s1)
@@ -366,13 +377,12 @@ def ms_candidate_gen(Fk, MIS):
                             temp_set2 = deep_tuple2list(s1)
                             temp_set2[len(temp_set2) - 1].append(ele2_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            print(temp_set2)
+                            # print("case1-3 : " + str(temp_set2))
         elif flag2:
-            print("flag2")
+            # print("flag2")
             temp_set2, ele2 = remove_second_last(ss2)
             for ss1 in Fk:
                 temp_set1, status1, ele1 = remove_head(ss1)
-                # print(ss1)
                 # print(temp_set1)
                 if isinstance(ele1, list):
                     ele1_str = ele1[0]
@@ -382,24 +392,24 @@ def ms_candidate_gen(Fk, MIS):
                 if operator.eq(temp_set1, temp_set2) and MIS[ele1_str] >= minMIS_last:
 
                     # Join ss1 and ss2 when the condition above has been satisfied
-
                     if status1 == 0:
                         temp_set = deep_tuple2list(ss2)
-                        temp_set.append(ele1)
+                        temp_set.insert(0, ele1)
                         Ck.update({deep_list2tutple(temp_set): 0})
+                        # print("case2-1 : " + str(temp_set))
 
                         if ss2_len == 2 and ele1_str < ss2[0][0]:
                             temp_set2 = deep_tuple2list(ss2)
-                            temp_set2[len(temp_set2) - 1].append(ele1_str)
+                            temp_set2[0].insert(0, ele1_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            print(temp_set2)
+                            # print("case2-2 : " + str(temp_set2))
 
                     else:
                         if ss2_len > 2 or (ss2_len == 2 and len(ss2) == 1 and ele1_str < ss2[0][0]):
                             temp_set2 = deep_tuple2list(ss2)
-                            temp_set2[len(temp_set2) - 1].append(ele1_str)
+                            temp_set2[0].insert(0, ele1_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            print(temp_set2)
+                            # print("case2-3 : " + str(temp_set2))
         else:
             # print("flag3")
             for itemset1 in Fk:
@@ -418,7 +428,8 @@ def ms_candidate_gen(Fk, MIS):
                         # print(itemset2)
                         # print(deep_list2tutple(temp_set))
                         Ck.update({deep_list2tutple(temp_set): 0})
-
+    print("========== CK ========== ")
+    print(Ck)
 
     # Pruning Step
     Ck_pruning = {}
