@@ -1,6 +1,4 @@
-import re
-from collections import Counter, OrderedDict
-import copy
+from collections import Counter
 import operator
 
 
@@ -10,10 +8,10 @@ def get_elements(sequence):
     element_set = sequence.split('}')
     i = 0
     for element in element_set:
-        if len(element) != 0:  # strip off the brace "{,}"
+        if len(element) != 0:   # strip off the brace "{,}"
             element_set[i] = element.split('{')[1]
             i = i + 1
-        else:  # strip off the empty value after "{,}" removing operation
+        else:                   # strip off the empty value after "{,}" removing operation
             element_set.remove(element)
 
     return element_set
@@ -35,6 +33,12 @@ def get_sequence_distinct(sequence):
     # print(sequence_distinct)
     return sequence_distinct
 
+def get_seq_length(sequence):
+    seq_length = 0;
+    for each in sequence:
+        seq_length += len(each)
+    return seq_length
+
 
 def deep_list_print(list1):
     for elements in list1:
@@ -52,6 +56,30 @@ def is_deep_list(list1):
         if isinstance(element, tuple) or isinstance(element, list):
             return True
     return False
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+
+    return False
+
+
+def lexicgraphic_asc_order(ele1, ele2):
+    if is_number(ele1) and is_number(ele2):
+        return float(ele2) > float(ele1)
+    else:
+        return ele2 > ele1
 
 
 def open_files(input_data, para_data):
@@ -77,8 +105,6 @@ def open_files(input_data, para_data):
     with open(para_data, "r") as f2:
         parameters = f2.read().splitlines()
         mis = parameters[0:-1]
-        data = [item for item in mis]
-        i = 0
         minSupDict = {}
         MIS = {}
         SDC = 0
@@ -129,8 +155,8 @@ def getL(trans, sorted_MIS, translen):
             temp_list4.append(each)
             temp_list5.append(sup_dict[each])
     L = dict(zip(temp_list4, temp_list5))
-    print(L)
-    return L
+    # print(L)
+    return L, sup_dict
 
 
 def getF1(L, MIS):
@@ -145,30 +171,39 @@ def getF1(L, MIS):
     return F1
 
 
-def level2_candidate_gen(L, SDC, sorted_MIS_list, MIS):
+def level2_candidate_gen(L, SDC, MIS):
     C2 = {}
-    for i in range(0, len(MIS) - 1):
-        if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
-            for j in range(i + 1, len(MIS)):
-                # and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[i][0]]
-                if sorted_MIS_list[j][0] in L.keys() and abs(
-                        L[sorted_MIS_list[j][0]] - L[sorted_MIS_list[i][0]]) <= SDC:
+    for l in L.keys():
+        for h in L.keys():
+            if l == h and MIS[l] <= L[l]:
+                temp_list = []
+                temp_list.append(tuple([l]))
+                temp_list.append(tuple([h]))
+                C2.update({tuple(temp_list): 0})
+            else:
+                min_item = l
+                max_item = h
+                if MIS[l] > MIS[h]:
+                    min_item = h
+                    max_item = l
+                if L[min_item] >= MIS[min_item] and L[max_item] >= MIS[min_item] and abs(L[min_item] - L[max_item]) <= SDC:
                     temp_list = []
-                    temp_list.append(sorted_MIS_list[i][0])
-                    temp_list.append(sorted_MIS_list[j][0])
-                    C2.update({tuple([tuple(sorted(temp_list))]): 0})                # maintain lexicographic order
-                    # C2.update({tuple(sorted(temp_list, key=lambda i: MIS[i])): 0}) # order by MIS
-
-    for i in range(0, len(MIS)):
-        if sorted_MIS_list[i][0] in L.keys() and L[sorted_MIS_list[i][0]] >= MIS[sorted_MIS_list[i][0]]:
-            for j in range(0, len(MIS)):
-                # and L[sorted_MIS_list[j][0]] >= MIS[sorted_MIS_list[i][0]]
-                if sorted_MIS_list[j][0] in L.keys() and abs(
-                        L[sorted_MIS_list[j][0]] - L[sorted_MIS_list[i][0]]) <= SDC:
-                    temp_list = []
-                    temp_list.append(tuple([sorted_MIS_list[i][0]]))
-                    temp_list.append(tuple([sorted_MIS_list[j][0]]))
+                    temp_list.append(tuple([min_item]))
+                    temp_list.append(tuple([max_item]))
                     C2.update({tuple(temp_list): 0})
+                    temp_list2 = []
+                    temp_list2.append(tuple([max_item]))
+                    temp_list2.append(tuple([min_item]))
+                    C2.update({tuple(temp_list2): 0})
+                    if lexicgraphic_asc_order(min_item, max_item):
+                        temp_list3 = []
+                        temp_list3.append(tuple([min_item, max_item]))
+                        C2.update({tuple(temp_list3): 0})
+                    else:
+                        temp_list4 = []
+                        temp_list4.append(tuple([max_item, min_item]))
+                        C2.update({tuple(temp_list4): 0})
+
     return C2
 
 
@@ -307,129 +342,136 @@ def remove_second_last(sequence):
     return tuple(temp_set), ele
 
 
-def ms_candidate_gen(Fk, MIS):
+def ms_candidate_gen(Fk, MIS, sup_dict, SDC):
     # Join Step
+    Ck = {}
+
     for s1 in Fk:
-        Ck = {}
-        s1_distinct = get_sequence_distinct(s1)
-        s1_len = len(s1_distinct)
-        if len(s1[len(s1) - 1]) == 1:           # find the last item in s1
-            s1_last_ele = s1[len(s1) - 1][0]
-        else:
-            idx = len(s1[len(s1) - 1])
-            s1_last_ele = s1[len(s1) - 1][idx - 1]
+        for s2 in Fk:
+            s1_len = get_seq_length(s1)
+            if len(s1[len(s1) - 1]) == 1:   # find the last item in s1
+                s1_last_ele = s1[len(s1) - 1][0]
+            else:
+                idx = len(s1[len(s1) - 1])
+                s1_last_ele = s1[len(s1) - 1][idx - 1]
 
-        flag1 = True                            # flag in case 1
-        minMIS = MIS[s1[0][0]]
-        for each in range(len(s1)):                            # fist item has the lowest MIS
-            for item in range(len(s1[each])):
-                if each == 0 and item == 0:
-                    pass
-                else:
-                    if minMIS >= MIS[s1[each][item]]:
-                        flag1 = False
-        ss2 = s1                                # flag in case 2
-        ss2_last_ele = s1_last_ele
-        ss2_len = s1_len
-        ss2_distinct = s1_distinct
-        flag2 = True
-        minMIS_last = MIS[ss2_last_ele]
-        for each in range(len(ss2)):                           # last item has the lowest MIS
-            for item in range(len(ss2[each])):
-                if each == len(ss2)-1 and item == len(ss2[each])-1:
-                    pass
-                else:
-                    if minMIS_last >= MIS[ss2[each][item]]:
-                        flag2 = False
+            flag1 = True                    # flag in case 1
+            minMIS = MIS[s1[0][0]]
+            for each in range(len(s1)):     # fist item has the lowest MIS
+                for item in range(len(s1[each])):
+                    if each == 0 and item == 0:
+                        pass
+                    else:
+                        if minMIS >= MIS[s1[each][item]]:
+                            flag1 = False
+            if len(s2[len(s2) - 1]) == 1:   # find the last item in s1
+                s2_last_ele = s2[len(s2) - 1][0]
+            else:
+                idx = len(s2[len(s2) - 1])
+                s2_last_ele = s2[len(s2) - 1][idx - 1]
+            s2_len = get_seq_length(s2)
+            flag2 = True
+            minMIS_last = MIS[s2_last_ele]
 
-        if flag1:
-            # print("flag1")
-            temp_set1, ele1 = remove_second(s1)
-            # print(s1)
-            # print(temp_set1)
-            for s2 in Fk:
+            for each in range(len(s2)):     # last item has the lowest MIS
+                for item in range(len(s2[each])):
+                    if each == len(s2) - 1 and item == len(s2[each]) - 1:
+                        pass
+                    else:
+                        if minMIS_last >= MIS[s2[each][item]]:
+                            flag2 = False
+            if flag1:
+                # print("flag1")
+                temp_set1, ele1 = remove_second(s1)
+                if isinstance(ele1, list):
+                    second_s1 = ele1[0]
+                else:
+                    second_s1 = ele1
                 temp_set2, status2, ele2 = remove_rear(s2)
                 if isinstance(ele2, list):
                     ele2_str = ele2[0]
-                    # print(ele2_str)
                 else:
                     ele2_str = ele2
-                if operator.eq(temp_set1, temp_set2) and MIS[ele2_str] > minMIS:
+                if operator.eq(temp_set1, temp_set2) and MIS[ele2_str] > minMIS and abs(
+                        sup_dict[second_s1] - sup_dict[ele2_str]) <= SDC:
 
                     # Join s1 and s2 when the condition above has been satisfied
 
-                    if status2 == 0:                                # 0, separate element
+                    if status2 == 0:  # 0, separate element
                         temp_set = deep_tuple2list(s1)
                         temp_set.append(ele2)
                         Ck.update({deep_list2tutple(temp_set): 0})  # c1 generated
-                        # print("case1-1 : " + str(temp_set))
+                        # print("case1-1 : " + str(temp_set) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
 
-                        if s1_len == 2 and ele2_str > s1_last_ele:  # special case for c2
+                        if s1_len == 2 and len(s1) == 2 and lexicgraphic_asc_order(s1_last_ele, ele2_str):
                             temp_set2 = deep_tuple2list(s1)
                             temp_set2[len(temp_set2) - 1].append(ele2_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            # print("case1-2 : "+ str(temp_set2))
+                            # print("case1-2 : "+ str(temp_set2) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
 
                     else:                                           # not separate element
-                        # print(s1)
-                        # print(len(s1))
-                        if s1_len > 2 or (s1_len == 2 and len(s1) == 1 and ele2_str > s1_last_ele):
+                        if s1_len > 2 or (s1_len == 2 and len(s1) == 1 and lexicgraphic_asc_order(s1_last_ele ,ele2_str)):
                             temp_set2 = deep_tuple2list(s1)
                             temp_set2[len(temp_set2) - 1].append(ele2_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            # print("case1-3 : " + str(temp_set2))
-        elif flag2:
-            # print("flag2")
-            temp_set2, ele2 = remove_second_last(ss2)
-            for ss1 in Fk:
-                temp_set1, status1, ele1 = remove_head(ss1)
-                # print(temp_set1)
+                            # print("case1-3 : " + str(temp_set2) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
+            elif flag2:
+                # print("flag2")
+                temp_set2, ele2 = remove_second_last(s2)
+                temp_set1, status1, ele1 = remove_head(s1)
+
+                if isinstance(ele2, list):
+                    second_last_s2 = ele2[0]
+                else:
+                    second_last_s2 = ele2
                 if isinstance(ele1, list):
                     ele1_str = ele1[0]
-                    # print(ele1_str)
                 else:
                     ele1_str = ele1
-                if operator.eq(temp_set1, temp_set2) and MIS[ele1_str] >= minMIS_last:
 
-                    # Join ss1 and ss2 when the condition above has been satisfied
+                if operator.eq(temp_set1, temp_set2) and MIS[ele1_str] >= minMIS_last and abs(
+                        sup_dict[second_last_s2] - sup_dict[ele1_str]) <= SDC:
+
+                    # Join s1 and s2 when the condition above has been satisfied
                     if status1 == 0:
-                        temp_set = deep_tuple2list(ss2)
+                        temp_set = deep_tuple2list(s2)
                         temp_set.insert(0, ele1)
                         Ck.update({deep_list2tutple(temp_set): 0})
-                        # print("case2-1 : " + str(temp_set))
+                        # print("case2-1 : " + str(temp_set) + "\ts1: " + str(s1) + "\ts2:" + str(s2))
 
-                        if ss2_len == 2 and ele1_str < ss2[0][0]:
-                            temp_set2 = deep_tuple2list(ss2)
+                        if s2_len == 2 and len(s2) == 2 and lexicgraphic_asc_order(ele1_str, s2[0][0]):
+                            temp_set2 = deep_tuple2list(s2)
                             temp_set2[0].insert(0, ele1_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            # print("case2-2 : " + str(temp_set2))
+                            # print("case2-2 : " + str(temp_set2) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
 
                     else:
-                        if ss2_len > 2 or (ss2_len == 2 and len(ss2) == 1 and ele1_str < ss2[0][0]):
-                            temp_set2 = deep_tuple2list(ss2)
+                        if s2_len > 2 or (s2_len == 2 and len(s2) == 1 and lexicgraphic_asc_order(ele1_str, s2[0][0])):
+                            temp_set2 = deep_tuple2list(s2)
                             temp_set2[0].insert(0, ele1_str)
                             Ck.update({deep_list2tutple(temp_set2): 0})
-                            # print("case2-3 : " + str(temp_set2))
-        else:
-            # print("flag3")
-            for itemset1 in Fk:
-                temp_set1, status1, ele1 = remove_head(itemset1)
-                # print(itemset1)
-                # print(temp_set1)
-                for itemset2 in Fk:
-                    temp_set2, status2, ele2 = remove_rear(itemset2)
-                    if operator.eq(temp_set1, temp_set2):
-                        temp_set = deep_tuple2list(itemset1)
-                        if status2 == 1:  # 1, means {2,3}, removing 3
-                            temp_set[len(temp_set) - 1].append(ele2)
-                        else:  # 0, means {2},{3}, removing {3}
-                            temp_set.append(ele2)
-                        # print(itemset1)
-                        # print(itemset2)
-                        # print(deep_list2tutple(temp_set))
-                        Ck.update({deep_list2tutple(temp_set): 0})
-    print("========== CK ========== ")
-    print(Ck)
+                            # print("case2-3 : " + str(temp_set2) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
+            else:
+                # print("flag3")
+                temp_set1, status1, ele1 = remove_head(s1)
+                temp_set2, status2, ele2 = remove_rear(s2)
+                if isinstance(ele1, list):
+                    remove_ele1 = ele1[0]
+                else:
+                    remove_ele1 = ele1
+                if isinstance(ele2, list):
+                    remove_ele2 = ele2[0]
+                else:
+                    remove_ele2 = ele2
+                if operator.eq(temp_set1, temp_set2) and abs(sup_dict[remove_ele1] - sup_dict[remove_ele2]) <= SDC:
+                    temp_set = deep_tuple2list(s1)
+                    if status2 == 1:                                # 1, means {2,3}, removing 3
+                        temp_set[len(temp_set) - 1].append(ele2)
+                    else:                                           # 0, means {2},{3}, removing {3}
+                        temp_set.append(ele2)
+                    Ck.update({deep_list2tutple(temp_set): 0})
+                    # print("case3 : " + str(temp_set) + "\ts1: " + str(s1) + "\ts2:"+ str(s2))
+
 
     # Pruning Step
     Ck_pruning = {}
@@ -437,12 +479,10 @@ def ms_candidate_gen(Fk, MIS):
         T = []
         candidate = deep_tuple2list(each)
         minMIS = 1
-        # print(each)
         for itemset in each:
             for item in itemset:
                 if MIS[item] < minMIS:
                     minMIS = MIS[item]
-        # print("min MIS: "+ str(minMIS))
         for i in range(len(candidate)):
             if len(candidate[i]) == 1:
                 temp = []
@@ -465,20 +505,22 @@ def ms_candidate_gen(Fk, MIS):
                         else:
                             temp.append(candidate[k])
                     T.append(temp)
+        flag_add = True
         for each_t in T:
             tuple_each = deep_list2tutple(each_t)
 
             if tuple_each in Fk:
-                Ck_pruning.update({each: 0})
+                pass
             else:
-                # print("flagEx")
                 flagEx = True
                 for item in tuple_each:
                     for i in item:
                         if MIS[i] == minMIS:
                             flagEx = False
-                if flagEx:
-                    Ck_pruning.update({each: 0})
+                if not flagEx:
+                    flag_add = False
+        if flag_add:
+            Ck_pruning.update({each: 0})
     return Ck_pruning
 
 

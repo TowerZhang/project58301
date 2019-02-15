@@ -1,15 +1,16 @@
 import util as util
 
-input_data = '05_large_dataset/data1-1.txt'
-para_data = '05_large_dataset/para1-1.txt'
-output_data = '05_large_dataset/output.txt'
+# ----------------------------------------------
+input_data = '06_test_case2/data-1.txt'
+para_data = '06_test_case2/para1-1.txt'
+output_data = '06_test_case2/output.txt'
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-# input_data = '04_test_case1/data-1.txt'
-# para_data = '04_test_case1/para1-2.txt'
-# output_data = '04_test_case1/output2.txt'
+# ----------------------------------------------
+# input_data = '05_large_dataset/data1-1.txt'
+# para_data = '05_large_dataset/para1-1.txt'
+# output_data = '05_large_dataset/output.txt'
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# ----------------------------------------------
 # input_data = '04_test_case1/data-1.txt'
 # para_data = '04_test_case1/para1-1.txt'
 # output_data = '04_test_case1/output.txt'
@@ -19,7 +20,7 @@ output_data = '05_large_dataset/output.txt'
 # para_data = '03_large_dataset/para2-2.txt'
 # output_data = '03_large_dataset/output2.txt'
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# -----------------------------------------------
 # input_data = '03_large_dataset/data-2.txt'
 # para_data = '03_large_dataset/para2-1.txt'
 # output_data = '03_large_dataset/output1.txt'
@@ -34,7 +35,7 @@ output_data = '05_large_dataset/output.txt'
 # para_data = '02_small_dataset2/para1-1.txt'
 # output_data = '02_small_dataset2/output1.txt'
 
-# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# -----------------------------------------------
 # input_data = '01_small_dataset1/inputdata.txt'
 # para_data = '01_small_dataset1/params.txt'
 # output_data = '01_small_dataset1/output.txt'
@@ -49,7 +50,7 @@ sorted_MIS_list = sorted(MIS.items(), key=lambda t: t[1])
 sorted_MIS_dict = dict(sorted_MIS_list)
 
 
-L = util.getL(trans_list, sorted_MIS_dict, translen)
+L, sup_dict= util.getL(trans_list, sorted_MIS_dict, translen)
 F1 = util.getF1(L, MIS)
 k = 2
 F_next = F1
@@ -59,13 +60,13 @@ with open(output_data, "w") as f:
         print("Number of Length " + str(1) + " Frequency Sequences:" + str(len(F1)))
         write += "Number of Length " + str(1) + " Frequency Sequences:" + str(len(F1)) +"\n"
         for i in F1:
-            print("\t<{"+str(i)+"}>\t count : " + str(F1[i]))
+            print("\t<{"+str(i)+"}>")
             write += "\t<{"+str(i)+"}>\n"
     while len(F_next) > 0:
         if k == 2:
-            Ck = util.level2_candidate_gen(L, SDC, sorted_MIS_list, MIS)
+            Ck = util.level2_candidate_gen(L, SDC, MIS)
         else:
-            Ck = util.ms_candidate_gen(F_next, MIS)dao
+            Ck = util.ms_candidate_gen(F_next, MIS, sup_dict, SDC)
         Fk = util.gen_Fk(trans_list, Ck, MIS)
         if len(Fk) > 0:
             Fk_output = util.tuple2str_output(Fk)
@@ -74,24 +75,11 @@ with open(output_data, "w") as f:
             for each in Fk_output:
                 print("\t"+each)
                 write += "\t" + each + "\n"
+        # if k == 2:
+        #     print(Ck)
         k += 1
         F_next = Fk
     f.write(write)
     f.close()
 
 
-
-# C2 = util.level2_candidate_gen(L, SDC, sorted_MIS_list, MIS)
-#
-# F2 = util.gen_Fk(trans_list, C2, MIS)
-#
-#
-# C3 = util.ms_candidate_gen(F2, MIS)
-# F3 = util.gen_Fk(trans_list, C3, MIS)
-
-
-# C4 = util.ms_candidate_gen(F3, MIS)
-# F4 = util.gen_Fk(trans_list, C4, MIS)
-# print(C4)
-# print("F4")
-# print(F4)

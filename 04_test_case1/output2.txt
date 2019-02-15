@@ -1,6 +1,6 @@
 Number of Length 1 Frequency Sequences:3
-	<{10}>
 	<{90}>
+	<{10}>
 	<{40}>
 
 Number of Length 2 Frequency Sequences:6

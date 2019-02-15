@@ -1,0 +1,23 @@
+Number of Length 1 Frequency Sequences:2
+	<{10}>
+	<{40}>
+
+Number of Length 2 Frequency Sequences:5
+	<{10,50}>
+	<{10}{40}>
+	<{10,40}>
+	<{10}{90}>
+	<{40}{40}>
+
+Number of Length 3 Frequency Sequences:6
+	<{10,50}{40}>
+	<{10,50}{90}>
+	<{10}{40,90}>
+	<{10,40,50}>
+	<{10,40}{40}>
+	<{10,40}{90}>
+
+Number of Length 4 Frequency Sequences:3
+	<{10,50}{40,90}>
+	<{10,40,50}{40}>
+	<{10,40,50}{90}>
